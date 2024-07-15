@@ -1,0 +1,39 @@
+# Build Folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# Project files
+*.csproj
+
+# Configuration files
+appsettings.json
+appsettings.Development.json
+
+# HTTP file
+*.http
+
+# Entity Framework Migrations
+Migrations/
+
+# Logs
+*.log
+
+# Visual Studio specific
+.vscode/
+.vs/
+
+# Rider specific
+.idea/
+
+# Node modules (if you're using Node.js for any part of your project)
+node_modules/
+
+# Other files
+.DS_Store
+*.bak
+*.swp
