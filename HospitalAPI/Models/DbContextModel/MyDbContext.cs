@@ -1,6 +1,7 @@
 ﻿using HospitalAPI.Models.DataModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using System.Globalization;
 
 namespace HospitalAPI.Models.DbContextModel
 {
@@ -23,7 +24,7 @@ namespace HospitalAPI.Models.DbContextModel
             base.OnModelCreating(modelBuilder);
 
             // One to One
-            modelBuilder.Entity<Billing>()
+            /*modelBuilder.Entity<Billing>()
                 .HasOne(x => x.Appointment)
                 .WithOne()
                 .HasForeignKey<Billing>(x => x.AppointmentId);
@@ -31,8 +32,7 @@ namespace HospitalAPI.Models.DbContextModel
             modelBuilder.Entity<Prescription>()
                 .HasOne(x => x.Appointment)
                 .WithOne()
-                .HasForeignKey<Prescription>(x => x.AppointmentId);
-
+                .HasForeignKey<Prescription>(x => x.AppointmentId);*/
 
             // One to Many
             modelBuilder.Entity<Doctor>()

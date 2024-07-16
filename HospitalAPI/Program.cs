@@ -4,6 +4,7 @@ using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -38,6 +39,7 @@ builder.Services.AddControllers()
         {
             options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 ;
 

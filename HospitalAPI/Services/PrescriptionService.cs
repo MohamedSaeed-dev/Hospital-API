@@ -51,15 +51,19 @@ namespace HospitalAPI.Services
             }
         }
 
-        public async Task<IEnumerable<Prescription>> GetAll(int? skip, int? take)
+        public async Task<IEnumerable<Prescription>> GetAll(int skip, int take)
         {
-            return await _db.Prescriptions.Include(x => x.Appointment).Skip((int)skip).Take((int)take).ToListAsync();
+            return await _db.Prescriptions
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
         }
 
         public async Task<Prescription?> GetById(int Id)
         {
 
-            return await _db.Prescriptions.Include(x => x.Appointment).SingleOrDefaultAsync(x => x.AppointmentId == Id);
+            return await _db.Prescriptions
+                .SingleOrDefaultAsync(x => x.AppointmentId == Id);
 
         }
 

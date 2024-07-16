@@ -51,15 +51,15 @@ namespace HospitalAPI.Services
             }
         }
 
-        public async Task<IEnumerable<Department>> GetAll(int? skip, int? take)
+        public async Task<IEnumerable<Department>> GetAll(int skip, int take)
         {
-            return await _db.Departments.Skip((int)skip).Take((int)take).ToListAsync();
+            return await _db.Departments.Skip(skip).Take(take).ToListAsync();
         }
 
         public async Task<Department?> GetById(int Id)
         {
 
-            return await _db.Departments.SingleOrDefaultAsync(x => x.Id == Id);
+            return await _db.Departments.FindAsync(Id);
             
         }
 

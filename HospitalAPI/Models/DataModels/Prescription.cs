@@ -5,7 +5,8 @@ namespace HospitalAPI.Models.DataModels
 {
     public class Prescription
     {
-        public int Id { get; set; }
+        [Key]
+        [ForeignKey("Appointment")]
         public int AppointmentId { get; set; }
 
         [MaxLength(100)]

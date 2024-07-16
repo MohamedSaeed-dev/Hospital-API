@@ -40,7 +40,7 @@ namespace HospitalAPI.Services
         {
             try
             {
-                var record = await _db.Appointments.SingleOrDefaultAsync(x => x.Id == Id);
+                var record = await _db.Appointments.FindAsync(Id);
                 if (record == null) return 0;
                 _db.Appointments.Remove(record);
                 return await _db.SaveChangesAsync();
@@ -54,36 +54,14 @@ namespace HospitalAPI.Services
         public async Task<IEnumerable<Appointment>> GetAll(int skip, int take)
         {
             return await _db.Appointments
-                .Select(x => new Appointment
-                {
-                    DateTime = x.DateTime,
-                    Id = x.Id,
-                    Status = x.Status,
-                    DoctorPatient = new DoctorPatient
-                    {
-                        Patient = x.DoctorPatient.Patient,
-                        Doctor = x.DoctorPatient.Doctor
-                    },
-                    
-                }).Skip(skip).Take(take)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
         }
 
         public async Task<Appointment?> GetById(int Id)
         {
             return await _db.Appointments
-                .Select(x => new Appointment
-                {
-                    DateTime = x.DateTime,
-                    Id = x.Id,
-                    Status = x.Status,
-                    DoctorPatient = new DoctorPatient
-                    {
-                        Patient = x.DoctorPatient.Patient,
-                        Doctor = x.DoctorPatient.Doctor
-                    },
-
-                })
                 .SingleOrDefaultAsync(x => x.Id == Id); 
         }
 
@@ -91,7 +69,7 @@ namespace HospitalAPI.Services
         {
             try
             {
-                var record = await _db.Appointments.SingleOrDefaultAsync(x => x.Id == Id);
+                var record = await _db.Appointments.FindAsync(Id);
                 if (record == null) return 0;
 
                 if (entity.Status.HasValue) record.Status = entity.Status.Value;

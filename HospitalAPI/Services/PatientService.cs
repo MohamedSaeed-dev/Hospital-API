@@ -38,9 +38,7 @@ namespace HospitalAPI.Services
                     PatientId = patient.Id
                 };
                 await _db.DoctorPatients.AddAsync(doctorPatient);
-
                 return await _db.SaveChangesAsync();
-
             }
             catch
             {
@@ -63,19 +61,11 @@ namespace HospitalAPI.Services
             }
         }
 
-        public async Task<IEnumerable<Patient>> GetAll(int? skip, int? take)
+        public async Task<IEnumerable<Patient>> GetAll(int skip, int take)
         {
             return await _db.Patients
-                .Select( x=> new Patient
-                {
-                    FullName = x.FullName,
-                    Phone = x.Phone,
-                    Gender= x.Gender,
-                    Email= x.Email,
-                    Address= x.Address,
-                    Id = x.Id,
-                    Appointments = x.Appointments,
-                }).Skip((int)skip).Take((int)take)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
         }
 
@@ -83,47 +73,18 @@ namespace HospitalAPI.Services
         {
 
             return await _db.Patients
-                .Select(x => new Patient
-                {
-                    Gender = x.Gender,
-                    Email = x.Email,
-                    Address = x.Address,
-                    Id = x.Id,
-                    Phone = x.Phone,    
-                    FullName = x.FullName,
-                    Appointments= x.Appointments,
-                })
                 .SingleOrDefaultAsync(x => x.Id == Id);
-
         }
 
         public async Task<IEnumerable<Patient>> GetPatientsAtDepartment(int departmentId)
         {
             return await _db.Patients.Where(p => p.DoctorPatients.Any(dp => dp.Doctor.DepartmentId == departmentId))
-            .Select(x => new Patient
-            {
-                Id = x.Id,
-                FullName = x.FullName,
-                Gender = x.Gender,
-                Phone = x.Phone,
-                Email = x.Email,
-                Address= x.Address,
-            })
             .ToListAsync();
         }
 
         public async Task<IEnumerable<Patient>> GetPatientsAtDoctor(int doctorId)
         {
             return await _db.Patients.Where(p => p.DoctorPatients.Any(x => x.Doctor.Id == doctorId))
-                .Select(x => new Patient
-                {
-                    Id = x.Id,
-                    FullName = x.FullName,
-                    Gender = x.Gender,
-                    Phone = x.Phone,
-                    Email = x.Email,
-                    Address = x.Address,
-                })
                 .ToListAsync();
         }
 
@@ -138,10 +99,7 @@ namespace HospitalAPI.Services
                 if (!string.IsNullOrEmpty(entity.Email)) record.Email = entity.Email;
                 if (!string.IsNullOrEmpty(entity.Phone)) record.Phone = entity.Phone;
                 if (!string.IsNullOrEmpty(entity.Address)) record.Address = entity.Address;
-
                 if (entity.Gender.HasValue) record.Gender = entity.Gender;
-
-
 
                 return await _db.SaveChangesAsync();
             }

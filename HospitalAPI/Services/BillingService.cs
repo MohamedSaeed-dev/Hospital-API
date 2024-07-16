@@ -40,7 +40,7 @@ namespace HospitalAPI.Services
         {
             try
             {
-                var record = await _db.Billings.SingleOrDefaultAsync(x => x.AppointmentId == Id);
+                var record = await _db.Billings.FindAsync(Id);
                 if (record == null) return 0;
                 _db.Billings.Remove(record);
                 return await _db.SaveChangesAsync();
@@ -51,16 +51,14 @@ namespace HospitalAPI.Services
             }
         }
 
-        public async Task<IEnumerable<Billing>> GetAll(int? skip, int? take)
+        public async Task<IEnumerable<Billing>> GetAll(int skip, int take)
         {
-            return await _db.Billings.Include(x => x.Appointment).Skip((int)skip).Take((int)take).ToListAsync();
+            return await _db.Billings.Include(x => x.Appointment).Skip(skip).Take(take).ToListAsync();
         }
 
         public async Task<Billing?> GetById(int Id)
         {
-
             return await _db.Billings.Include(x => x.Appointment).SingleOrDefaultAsync(x => x.AppointmentId == Id);
-
         }
 
         public async Task<int> Update(int Id, BillingDTO entity)
@@ -72,7 +70,6 @@ namespace HospitalAPI.Services
                 
                 if(entity.Status.HasValue) record.Status = entity.Status.Value;
                 if(entity.Amount.HasValue) record.Amount = entity.Amount.Value;
-                if(entity.DateTime.HasValue) record.DateTime = entity.DateTime.Value;
                 if(entity.AppointmentId.HasValue) record.AppointmentId = entity.AppointmentId.Value;
 
                 return await _db.SaveChangesAsync();

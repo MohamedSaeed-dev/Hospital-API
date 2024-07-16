@@ -50,60 +50,24 @@ namespace HospitalAPI.Services
             }
         }
 
-        public async Task<IEnumerable<Doctor>> GetAll(int? skip, int? take)
+        public async Task<IEnumerable<Doctor>> GetAll(int skip, int take)
         {
             return await _db.Doctors
-                .Select(p => new Doctor
-                {
-                    Address = p.Address,
-                    BonusRate = p.BonusRate,
-                    Department = p.Department,
-                    Email = p.Email,
-                    FullName = p.FullName,
-                    Gender = p.Gender,
-                    Id = p.Id,
-                    Phone = p.Phone,
-                    Salary = p.Salary,
-                    Status = p.Status,
-                    Appointments = p.Appointments,
-
-                }).Skip((int)skip).Take((int)take)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
-
         }
 
         public async Task<Doctor?> GetById(int Id)
         {
             return await _db.Doctors
-                .Select(p => new Doctor
-                {
-                    Address = p.Address,
-                    BonusRate = p.BonusRate,
-                    Department = p.Department,
-                    Email = p.Email,
-                    FullName = p.FullName,
-                    Gender = p.Gender,
-                    Id = p.Id,
-                    Phone = p.Phone,
-                    Salary = p.Salary,
-                    Status = p.Status,
-                    Appointments= p.Appointments,
-
-                })
                 .SingleOrDefaultAsync(x => x.Id == Id);
         }
 
         public async Task<IEnumerable<Doctor>> GetDoctorsByDepartment(int departmentId)
         { 
             return await _db.Doctors.Where(x => x.Department.Id == departmentId)
-                .Select(x => new Doctor
-                {
-                    Id = x.Id,
-                    FullName = x.FullName,
-                    Email = x.Email,
-                    Gender = x.Gender,
-                    Phone = x.Phone,
-                }).ToListAsync();
+                .ToListAsync();
         }
 
         public async Task<int> Update(int Id, DoctorDTO entity)
