@@ -25,8 +25,7 @@ namespace HospitalAPI.Services
         public async Task<int> Add(PatientDTO entity)
         {
             try
-            {
-                
+            {   
                 Patient patient = _mapper.Map<Patient>(entity);
                 
                 await _db.Patients.AddAsync(patient);
@@ -40,9 +39,9 @@ namespace HospitalAPI.Services
                 await _db.DoctorPatients.AddAsync(doctorPatient);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -55,9 +54,9 @@ namespace HospitalAPI.Services
                 _db.Patients.Remove(record);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -103,9 +102,9 @@ namespace HospitalAPI.Services
 
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
     }

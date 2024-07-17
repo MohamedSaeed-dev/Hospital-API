@@ -28,11 +28,10 @@ namespace HospitalAPI.Services
                 var department = _mapper.Map<Department>(entity);
                 await _db.Departments.AddAsync(department);
                 return _db.SaveChanges();
-
             }
-            catch
+            catch(Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -45,9 +44,9 @@ namespace HospitalAPI.Services
                 _db.Departments.Remove(record);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -58,9 +57,7 @@ namespace HospitalAPI.Services
 
         public async Task<Department?> GetById(int Id)
         {
-
             return await _db.Departments.FindAsync(Id);
-            
         }
 
         public async Task<int> Update(int Id, DepartmentDTO entity)
@@ -74,9 +71,9 @@ namespace HospitalAPI.Services
 
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
     }

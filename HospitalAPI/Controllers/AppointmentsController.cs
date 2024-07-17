@@ -39,7 +39,7 @@ namespace HospitalAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -56,7 +56,7 @@ namespace HospitalAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -73,7 +73,7 @@ namespace HospitalAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -90,7 +90,7 @@ namespace HospitalAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
             }
         }
     }

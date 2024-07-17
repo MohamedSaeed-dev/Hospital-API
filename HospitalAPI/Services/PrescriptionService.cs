@@ -30,9 +30,9 @@ namespace HospitalAPI.Services
                 return _db.SaveChanges();
 
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -45,9 +45,9 @@ namespace HospitalAPI.Services
                 _db.Prescriptions.Remove(record);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -74,16 +74,17 @@ namespace HospitalAPI.Services
                 var record = await _db.Prescriptions.SingleOrDefaultAsync(x => x.AppointmentId == Id);
                 if (record == null) return 0;
 
+                if(!string.IsNullOrEmpty(entity.Medication)) record.Medication = entity.Medication;
+
                 if(entity.StartDate.HasValue) record.StartDate = entity.StartDate.Value;
                 if(entity.EndDate.HasValue) record.EndDate = entity.EndDate.Value;
                 if(entity.AppointmentId.HasValue) record.AppointmentId = entity.AppointmentId.Value;
-                if(entity.Medication != null) record.Medication = entity.Medication;
 
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
     }

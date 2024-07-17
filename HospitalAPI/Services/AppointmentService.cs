@@ -28,11 +28,9 @@ namespace HospitalAPI.Services
                 await _db.Appointments.AddAsync(appointment);
                 return _db.SaveChanges();
             }
-            catch(Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.InnerException);
-                return -1;
+                throw;
             }
         }
 
@@ -45,9 +43,9 @@ namespace HospitalAPI.Services
                 _db.Appointments.Remove(record);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -78,11 +76,9 @@ namespace HospitalAPI.Services
 
                 return await _db.SaveChangesAsync();
             }
-            catch(Exception ex) 
+            catch (Exception)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.InnerException);
-                return -1;
+                throw;
             }
         }
     }

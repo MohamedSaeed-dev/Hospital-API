@@ -41,7 +41,6 @@ builder.Services.AddControllers()
             options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
-;
 
 builder.Services.AddScoped<MyDbContext>();
 
@@ -66,7 +65,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors(x => x.AllowAnyOrigin());
+app.UseCors();
 
 app.UseHttpsRedirection();
 
