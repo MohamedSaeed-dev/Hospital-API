@@ -30,9 +30,9 @@ namespace HospitalAPI.Services
                 return _db.SaveChanges();
 
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -45,9 +45,9 @@ namespace HospitalAPI.Services
                 _db.Billings.Remove(record);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -74,9 +74,9 @@ namespace HospitalAPI.Services
 
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
     }

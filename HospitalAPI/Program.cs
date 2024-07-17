@@ -40,6 +40,8 @@ builder.Services.AddControllers()
             options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
         });
 
 builder.Services.AddScoped<MyDbContext>();

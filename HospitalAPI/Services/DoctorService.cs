@@ -29,9 +29,9 @@ namespace HospitalAPI.Services
                 await _db.Doctors.AddAsync(doctor);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -44,9 +44,9 @@ namespace HospitalAPI.Services
                 _db.Doctors.Remove(record);
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
 
@@ -90,9 +90,9 @@ namespace HospitalAPI.Services
 
                 return await _db.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
-                return -1;
+                throw;
             }
         }
     }
