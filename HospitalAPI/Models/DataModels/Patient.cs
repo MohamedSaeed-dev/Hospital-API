@@ -4,6 +4,5 @@
     {
         public int Id { get; set; }
         public ICollection<DoctorPatient> DoctorPatients { get; set; }
-        public ICollection<Appointment> Appointments { get; set; }
     }
 }

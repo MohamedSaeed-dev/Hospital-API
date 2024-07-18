@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddDbContext<MyDbContext>(x => x.UseSqlServer(
-
     builder.Configuration.GetConnectionString("SQLConnection")
 ));
 
@@ -34,6 +34,7 @@ builder.Services.AddSwaggerGen(c =>
         Example = new OpenApiString(DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"))
     });
 });
+
 builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
@@ -41,7 +42,6 @@ builder.Services.AddControllers()
             options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-
         });
 
 builder.Services.AddScoped<MyDbContext>();
@@ -54,6 +54,7 @@ builder.Services.AddTransient<IBillingService, BillingService>();
 builder.Services.AddTransient<IPrescriptionService, PrescriptionService>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
@@ -70,6 +71,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 
 app.UseHttpsRedirection();
+
+app.UseResponseCaching();
 
 app.UseAuthentication();
 

@@ -5,8 +5,7 @@ namespace HospitalAPI.Models.DataModels
     public class Doctor : Person
     {
         public int Id { get; set; }
-        public int DepartmentId { get; set; }
-        
+        public int? DepartmentId { get; set; }
         [Required]
         [Range(1000, 1000000)]
         public double Salary { get; set; }
@@ -14,7 +13,6 @@ namespace HospitalAPI.Models.DataModels
         public DoctorStatus Status { get; set; }
 
         public Department Department { get; set; }
-        public ICollection<Appointment> Appointments { get; set; }
         public ICollection<DoctorPatient> DoctorPatients { get; set; }
 
     }

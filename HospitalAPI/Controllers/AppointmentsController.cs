@@ -20,6 +20,7 @@ namespace HospitalAPI.Controllers
         // GET: api/<AppointmentsController>
         [HttpGet]
         [PaginationFilter]
+        [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Any, NoStore = false)]
         public async Task<IEnumerable<Appointment>> GetAllAppointment([FromQuery] PaginationQuery paginationQuery)
         {
             PaginationIndexes indexes = (PaginationIndexes)HttpContext.Items["PaginationIndexes"]!;
