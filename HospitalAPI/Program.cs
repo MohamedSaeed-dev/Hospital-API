@@ -1,5 +1,6 @@
 using HospitalAPI.Features.JsonConverter;
 using HospitalAPI.Models.DbContextModel;
+using HospitalAPI.Repositories;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
@@ -24,14 +25,13 @@ builder.Services.AddSwaggerGen(c =>
     {
         Type = "string",
         Format = "date",
-        Example = new OpenApiString(DateOnly.FromDateTime(DateTime.Now).ToString("dd/MM/yyyy"))
+        Example = new OpenApiString(DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd"))
     });
-
     c.MapType<DateTime>(() => new OpenApiSchema
     {
         Type = "string",
-        Format = "date",
-        Example = new OpenApiString(DateTime.Now.ToString("dd/MM/yyyy hh:mm tt"))
+        Format = "datetime",
+        Example = new OpenApiString(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ"))
     });
 });
 
@@ -46,12 +46,12 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<MyDbContext>();
 
-builder.Services.AddTransient<IDoctorService, DoctorService>();
-builder.Services.AddTransient<IDepartmentService, DepartmentService>();
-builder.Services.AddTransient<IPatientService, PatientService>();
-builder.Services.AddTransient<IAppointmentService, AppointmentService>();
-builder.Services.AddTransient<IBillingService, BillingService>();
-builder.Services.AddTransient<IPrescriptionService, PrescriptionService>();
+builder.Services.AddTransient<IDoctorService, DoctorRepository>();
+builder.Services.AddTransient<IDepartmentService, DepartmentRepository>();
+builder.Services.AddTransient<IPatientService, PatientRepository>();
+builder.Services.AddTransient<IAppointmentService, AppointmentRepository>();
+builder.Services.AddTransient<IBillingService, BillingRepository>();
+builder.Services.AddTransient<IPrescriptionService, PrescriptionRepository>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddResponseCaching();

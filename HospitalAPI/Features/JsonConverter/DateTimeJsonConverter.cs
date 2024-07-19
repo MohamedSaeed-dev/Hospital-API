@@ -6,7 +6,7 @@ namespace HospitalAPI.Features.JsonConverter
 {
     public class DateTimeJsonConverter : JsonConverter<DateTime>
     {
-        private const string Format = "dd/MM/yyyy hh:mm tt";
+        private const string Format = "yyyy-MM-ddTHH:mm:ssZ";
 
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

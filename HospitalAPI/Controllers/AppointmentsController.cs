@@ -1,8 +1,12 @@
-﻿using HospitalAPI.Features.Pagination;
+﻿using HospitalAPI.Features;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Globalization;
+using System.Web;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -21,7 +25,7 @@ namespace HospitalAPI.Controllers
         [HttpGet]
         [PaginationFilter]
         [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Any, NoStore = false)]
-        public async Task<IEnumerable<Appointment>> GetAllAppointment([FromQuery] PaginationQuery paginationQuery)
+        public async Task<IEnumerable<Appointment>> GetAllAppointments([FromQuery] PaginationQuery paginationQuery)
         {
             PaginationIndexes indexes = (PaginationIndexes)HttpContext.Items["PaginationIndexes"]!;
             return await _serviceAppointment.GetAll(indexes.Skip, indexes.Take);
@@ -37,6 +41,21 @@ namespace HospitalAPI.Controllers
                 if (appointment == null) return BadRequest(new { message = $"There is no appointment with Id={id}" });
                 return Ok(new { appointment = appointment });
 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+            }
+        }
+        [HttpGet("startDate=&endDate=")]
+        public async Task<IActionResult> AppointmentsAtDateRange([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        {
+            try
+            {
+                if (!startDate.HasValue || !endDate.HasValue) return BadRequest(new { message = "No Dates!" });
+                var appointments = await _serviceAppointment.AppointmentsAtDateRange(startDate.Value, endDate.Value);
+                if (appointments == null) return BadRequest(new { message = $"There is no appointments" });
+                return Ok(new { appointment = appointments });
             }
             catch (Exception ex)
             {
