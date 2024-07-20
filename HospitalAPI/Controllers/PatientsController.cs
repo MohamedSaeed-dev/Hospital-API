@@ -1,6 +1,7 @@
 ﻿using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
+using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using HospitalAPI.ServicesAPI;
 using Microsoft.AspNetCore.Mvc;
@@ -113,6 +114,19 @@ namespace HospitalAPI.Controllers
             {
                 if (doctorId <= 0) return BadRequest(new { message = "Invalid Id" });
                 return Ok(new { Patients = await _servicePatient.GetPatientsAtDoctor(doctorId) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+            }
+        }
+        [HttpGet("Appointments/{appointmentId}")]
+        public async Task<IActionResult> GetPateintAtAppointment(int appointmentId)
+        {
+            try
+            {
+                if (appointmentId <= 0) return BadRequest(new { message = "Invalid Id" });
+                return Ok(await _servicePatient.GetPateintAtAppointment(appointmentId));
             }
             catch (Exception ex)
             {

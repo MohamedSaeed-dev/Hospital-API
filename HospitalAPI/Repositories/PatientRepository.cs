@@ -2,9 +2,10 @@
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
+using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
-
+using System.Linq;
 namespace HospitalAPI.Repositories
 {
     public class PatientRepository : IPatientService
@@ -81,7 +82,32 @@ namespace HospitalAPI.Repositories
             return await _db.Patients.Where(p => p.DoctorPatients.Any(x => x.Doctor.Id == doctorId))
                 .ToListAsync();
         }
-
+        public async Task<PateintAppointmentViewModel?> GetPateintAtAppointment(int appointmentId)
+        {
+            return (from DP in _db.DoctorPatients
+                    join P in _db.Patients
+                    on DP.PatientId equals P.Id
+                    join D in _db.Doctors
+                    on DP.DoctorId equals D.Id
+                    join Dept in _db.Departments
+                    on D.DepartmentId equals Dept.Id
+                    join A in _db.Appointments
+                    on DP.Id equals A.DoctorPatientId
+                    join B in _db.Billings
+                    on A.Id equals B.AppointmentId
+                    where A.Id == appointmentId
+                    select new PateintAppointmentViewModel
+                    {
+                        PatientName = P.FullName,
+                        PatientGender = P.Gender.Value,
+                        DoctorName = D.FullName,
+                        DoctorDepartment = D.Department.Name,
+                        DoctorGender = D.Gender.Value,
+                        AppointmentDate = A.DateTime,
+                        BillingAmount = B.Amount,
+                        BillingStatus = B.Status
+                    }).FirstOrDefault();
+        }
         public async Task<int> Update(int Id, PatientDTO entity)
         {
             try
