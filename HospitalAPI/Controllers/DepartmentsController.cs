@@ -1,4 +1,5 @@
-﻿using HospitalAPI.Features.Pagination;
+﻿using Azure;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
@@ -19,11 +20,9 @@ namespace HospitalAPI.Controllers
         }
         // GET: api/<DepartmentController>
         [HttpGet]
-        [PaginationFilter]
-        public async Task<IEnumerable<Department>> GetAllDepartments([FromQuery] PaginationQuery paginationQuery)
+        public async Task<PagedList<Department>> GetAllDepartments([FromQuery] GetAllQueries queries)
         {
-            PaginationIndexes indexes = (PaginationIndexes)HttpContext.Items["PaginationIndexes"]!;
-            return await _serviceDepartment.GetAll(indexes.Skip, indexes.Take);
+            return await _serviceDepartment.GetAll(queries);
         }
 
         // GET api/<DepartmentController>/5
@@ -35,12 +34,12 @@ namespace HospitalAPI.Controllers
                 if (id <= 0) return BadRequest(new { message = "Invalid Id" });
                 var department = await _serviceDepartment.GetById(id);
                 if (department == null) return BadRequest(new { message = $"There is no department with Id={id}"});
-                return Ok(new { department = department });
+                return Ok(department);
                 
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -51,13 +50,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if(entity == null) return BadRequest(new { message = "No Data provided!" });
-                var isSuccessfull = await _serviceDepartment.Add(entity);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to add the department" });
-                return Ok(new { message = "The department is added successfully" });
+                var response = await _serviceDepartment.Add(entity);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -68,13 +66,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (id <= 0 || entity == null) return BadRequest(new { message = "Invalid entered data" });
-                var isSuccessfull = await _serviceDepartment.Update(id, entity);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to update the department" });
-                return Ok(new { message = "The department is updated successfully" });
+                var response = await _serviceDepartment.Update(id, entity);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -85,13 +82,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (id <= 0) return BadRequest(new { message = "Invalid Id" });
-                var isSuccessfull = await _serviceDepartment.DeleteById(id);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to delete the department" });
-                return Ok(new { message = "The department is deleted successfully" });
+                var response = await _serviceDepartment.DeleteById(id);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
     }

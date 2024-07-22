@@ -1,39 +1,58 @@
 ﻿using AutoMapper;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Models.ViewModels;
+using HospitalAPI.Models.ViewModels.ResponseStatus;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Linq.Expressions;
 namespace HospitalAPI.Repositories
 {
     public class PatientRepository : IPatientService
     {
         private readonly MyDbContext _db;
         private readonly IMapper _mapper;
-        public PatientRepository(MyDbContext db, IMapper mapper)
+        private readonly IResponseStatus _response;
+
+        public PatientRepository(MyDbContext db, IMapper mapper, IResponseStatus response)
         {
             _db = db;
             _mapper = mapper;
+            _response = response;
         }
 
-        public async Task<int> Add(PatientDTO entity)
+        public async Task<ResponseStatus> Add(PatientDTO entity)
         {
             try
             {
+                var isExist = _db.Patients.Any(x => x.FullName == entity.FullName);
+                if (isExist) return _response.BadRequest("Patient is already exist");
                 Patient patient = _mapper.Map<Patient>(entity);
-
-                await _db.Patients.AddAsync(patient);
-                await _db.SaveChangesAsync();
-
-                var doctorPatient = new DoctorPatient
+                using(var transaction = _db.Database.BeginTransaction())
                 {
-                    DoctorId = entity.DoctorId,
-                    PatientId = patient.Id
-                };
-                await _db.DoctorPatients.AddAsync(doctorPatient);
-                return await _db.SaveChangesAsync();
+                    try
+                    {
+                        await _db.Patients.AddAsync(patient);
+                        await _db.SaveChangesAsync();
+                        var doctorPatient = new DoctorPatient
+                        {
+                            DoctorId = entity.DoctorId,
+                            PatientId = patient.Id
+                        };
+                        await _db.DoctorPatients.AddAsync(doctorPatient);
+                        await _db.SaveChangesAsync();
+                        transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+                return _response.Created("Patient is Created Successfully");
             }
             catch (Exception)
             {
@@ -41,14 +60,15 @@ namespace HospitalAPI.Repositories
             }
         }
 
-        public async Task<int> DeleteById(int Id)
+        public async Task<ResponseStatus> DeleteById(int Id)
         {
             try
             {
                 var record = await _db.Patients.SingleOrDefaultAsync(x => x.Id == Id);
-                if (record == null) return 0;
+                if (record == null) return _response.BadRequest("Patient is not exits");
                 _db.Patients.Remove(record);
-                return await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                return _response.Ok("Patient is Deleted Successfully");
             }
             catch (Exception)
             {
@@ -56,12 +76,23 @@ namespace HospitalAPI.Repositories
             }
         }
 
-        public async Task<IEnumerable<Patient>> GetAll(int skip, int take)
+        public async Task<PagedList<Patient>> GetAll(GetAllQueries queries)
         {
-            return await _db.Patients
-                .Skip(skip)
-                .Take(take)
-                .ToListAsync();
+            var patients = queries.SortOrder.ToLower() == "desc" ?
+                _db.Patients.Where(x => x.FullName!.ToLower().Contains(queries.SearchTerm.ToLower())).OrderByDescending(GetProperty(queries.SortColumn)) :
+                _db.Patients.Where(x => x.FullName!.ToLower().Contains(queries.SearchTerm.ToLower())).OrderBy(GetProperty(queries.SortColumn));
+
+            return await PagedList<Patient>.CreatePagedList(patients, queries.Page, queries.PageSize);
+        }
+
+        public Expression<Func<Patient, object>> GetProperty(string sortColumn)
+        {
+            return sortColumn?.ToLower() switch
+            {
+                "name" => d => d.FullName!,
+                "gender" => d => d.Gender!,
+                _ => d => d.Id
+            };
         }
 
         public async Task<Patient?> GetById(int Id)
@@ -108,12 +139,12 @@ namespace HospitalAPI.Repositories
                         BillingStatus = B.Status
                     }).FirstOrDefault();
         }
-        public async Task<int> Update(int Id, PatientDTO entity)
+        public async Task<ResponseStatus> Update(int Id, PatientDTO entity)
         {
             try
             {
                 var record = await _db.Patients.SingleOrDefaultAsync(x => x.Id == Id);
-                if (record == null) return 0;
+                if (record == null) return _response.BadRequest("Patient is not exist");
 
                 if (!string.IsNullOrEmpty(entity.FullName)) record.FullName = entity.FullName;
                 if (!string.IsNullOrEmpty(entity.Email)) record.Email = entity.Email;
@@ -121,7 +152,8 @@ namespace HospitalAPI.Repositories
                 if (!string.IsNullOrEmpty(entity.Address)) record.Address = entity.Address;
                 if (entity.Gender.HasValue) record.Gender = entity.Gender;
 
-                return await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                return _response.Ok("Patient is Upadated Succesffully");
             }
             catch (Exception)
             {

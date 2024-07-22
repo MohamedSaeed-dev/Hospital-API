@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
+using HospitalAPI.Models.ViewModels.ResponseStatus;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace HospitalAPI.Repositories
 {
@@ -11,19 +14,23 @@ namespace HospitalAPI.Repositories
     {
         private readonly MyDbContext _db;
         private readonly IMapper _mapper;
-        public PrescriptionRepository(MyDbContext db, IMapper mapper)
+        private readonly IResponseStatus _response;
+
+        public PrescriptionRepository(MyDbContext db, IMapper mapper, IResponseStatus response)
         {
             _db = db;
             _mapper = mapper;
+            _response = response;
         }
 
-        public async Task<int> Add(PrescriptionDTO entity)
+        public async Task<ResponseStatus> Add(PrescriptionDTO entity)
         {
             try
             {
                 Prescription prescription = _mapper.Map<Prescription>(entity);
                 await _db.Prescriptions.AddAsync(prescription);
-                return _db.SaveChanges();
+                await _db.SaveChangesAsync();
+                return _response.Created("Prescription is Created Successfully");
 
             }
             catch (Exception)
@@ -32,14 +39,15 @@ namespace HospitalAPI.Repositories
             }
         }
 
-        public async Task<int> DeleteById(int Id)
+        public async Task<ResponseStatus> DeleteById(int Id)
         {
             try
             {
                 var record = await _db.Prescriptions.SingleOrDefaultAsync(x => x.AppointmentId == Id);
-                if (record == null) return 0;
+                if (record == null) return _response.BadRequest("Prescription is not exist");
                 _db.Prescriptions.Remove(record);
-                return await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                return _response.Ok("Prescription is Deleted Successfully");
             }
             catch (Exception)
             {
@@ -47,12 +55,24 @@ namespace HospitalAPI.Repositories
             }
         }
 
-        public async Task<IEnumerable<Prescription>> GetAll(int skip, int take)
+        public async Task<PagedList<Prescription>> GetAll(GetAllQueries queries)
         {
-            return await _db.Prescriptions
-                .Skip(skip)
-                .Take(take)
-                .ToListAsync();
+            var prescriptions = queries.SortOrder.ToLower() == "desc" ?
+                _db.Prescriptions.Where(x => x.Medication!.ToLower().Contains(queries.SearchTerm.ToLower())).OrderByDescending(GetProperty(queries.SortColumn)) :
+                _db.Prescriptions.Where(x => x.Medication!.ToLower().Contains(queries.SearchTerm.ToLower())).OrderBy(GetProperty(queries.SortColumn));
+
+            return await PagedList<Prescription>.CreatePagedList(_db.Prescriptions, queries.Page, queries.PageSize);
+        }
+
+        public Expression<Func<Prescription, object>> GetProperty(string sortColumn)
+        {
+            return sortColumn?.ToLower() switch
+            {
+                "startdate" => d => d.StartDate!,
+                "enddate" => d => d.EndDate!,
+                "medication" => d => d.Medication,
+                _ => d => d.AppointmentId
+            };
         }
 
         public async Task<Prescription?> GetById(int Id)
@@ -63,12 +83,12 @@ namespace HospitalAPI.Repositories
 
         }
 
-        public async Task<int> Update(int Id, PrescriptionDTO entity)
+        public async Task<ResponseStatus> Update(int Id, PrescriptionDTO entity)
         {
             try
             {
                 var record = await _db.Prescriptions.SingleOrDefaultAsync(x => x.AppointmentId == Id);
-                if (record == null) return 0;
+                if (record == null) return _response.BadRequest("Prescription is not exist");
 
                 if (!string.IsNullOrEmpty(entity.Medication)) record.Medication = entity.Medication;
 
@@ -76,7 +96,8 @@ namespace HospitalAPI.Repositories
                 if (entity.EndDate.HasValue) record.EndDate = entity.EndDate.Value;
                 if (entity.AppointmentId.HasValue) record.AppointmentId = entity.AppointmentId.Value;
 
-                return await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                return _response.Ok("Prescription is Updated Suucessfully");
             }
             catch (Exception)
             {

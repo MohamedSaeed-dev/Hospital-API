@@ -18,10 +18,18 @@ namespace HospitalAPI.Models.DbContextModel
         public DbSet<Billing> Billings { get; set; }
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<DoctorPatient> DoctorPatients { get; set; }
+        public DbSet<User> Users { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>()
+                .HasData(
+                new User { Id = 1, UserName = "hesham", Email = "hesham@gmail.com", Role = Role.Receptionist, IsVerified = false, Password = "$2a$11$t7ojw0LaSgz4FfUEV6T7ruDHGzKeAG6ruX5F7tsvMRb2tebOJjGT2" },
+                new User { Id = 2, UserName = "hind", Email = "hind@gmail.com", Role = Role.Receptionist, IsVerified = false, Password = "$2a$11$HLaXbRxyH/HgP/C4lTAfJOwD1UOFUGNhsiUMmm/4942FCjsZz.Pum" },
+                new User { Id = 3, UserName = "admin", Email = "admin@gmail.com", Role = Role.Admin, IsVerified = true, Password = "$2a$11$mC.2r6wTtURp1XFu6TlceOz4WCi5E8iWvYaPIgayzT13XkD.4QfQO" }
+                );
 
             modelBuilder.Entity<Department>()
                 .HasData(

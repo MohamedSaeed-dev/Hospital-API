@@ -1,4 +1,5 @@
-﻿using HospitalAPI.Features.Pagination;
+﻿using Azure;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
@@ -19,11 +20,9 @@ namespace HospitalAPI.Controllers
         }
         // GET: api/<BillingController>
         [HttpGet]
-        [PaginationFilter]
-        public async Task<IEnumerable<Billing>> GetAllBillings([FromQuery] PaginationQuery paginationQuery)
+        public async Task<PagedList<Billing>> GetAllBillings([FromQuery] GetAllQueries queries)
         {
-            PaginationIndexes indexes = (PaginationIndexes)HttpContext.Items["PaginationIndexes"]!;
-            return await _serviceBilling.GetAll(indexes.Skip, indexes.Take);
+            return await _serviceBilling.GetAll(queries);
         }
 
         // GET api/<BillingController>/5
@@ -35,12 +34,12 @@ namespace HospitalAPI.Controllers
                 if (id <= 0) return BadRequest(new { message = "Invalid Id" });
                 var billing = await _serviceBilling.GetById(id);
                 if (billing == null) return BadRequest(new { message = $"There is no billing with Id={id}" });
-                return Ok(new { billing = billing });
+                return Ok(billing);
 
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -51,13 +50,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (entity == null) return BadRequest(new { message = "No Data provided!" });
-                var isSuccessfull = await _serviceBilling.Add(entity);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to add the billing" });
-                return Ok(new { message = "The billing is added successfully" });
+                var response = await _serviceBilling.Add(entity);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -68,13 +66,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (id <= 0 || entity == null) return BadRequest(new { message = "Invalid entered data" });
-                var isSuccessfull = await _serviceBilling.Update(id, entity);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to update the billing" });
-                return Ok(new { message = "The billing is updated successfully" });
+                var response = await _serviceBilling.Update(id, entity);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -85,13 +82,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (id <= 0) return BadRequest(new { message = "Invalid Id" });
-                var isSuccessfull = await _serviceBilling.DeleteById(id);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to delete the billing" });
-                return Ok(new { message = "The billing is deleted successfully" });
+                var response = await _serviceBilling.DeleteById(id);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
     }

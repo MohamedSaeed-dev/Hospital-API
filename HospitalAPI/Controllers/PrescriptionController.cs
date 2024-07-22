@@ -1,4 +1,5 @@
-﻿using HospitalAPI.Features.Pagination;
+﻿using Azure;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
@@ -19,11 +20,9 @@ namespace HospitalAPI.Controllers
         }
         // GET: api/<PrescriptionController>
         [HttpGet]
-        [PaginationFilter]
-        public async Task<IEnumerable<Prescription>> GetAllPrescriptions([FromQuery] PaginationQuery paginationQuery)
+        public async Task<PagedList<Prescription>> GetAllPrescriptions([FromQuery] GetAllQueries queries)
         {
-            PaginationIndexes indexes = (PaginationIndexes)HttpContext.Items["PaginationIndexes"]!;
-            return await _servicePrescription.GetAll(indexes.Skip, indexes.Take);
+            return await _servicePrescription.GetAll(queries);
         }
 
         // GET api/<PrescriptionController>/5
@@ -35,12 +34,12 @@ namespace HospitalAPI.Controllers
                 if (id <= 0) return BadRequest(new { message = "Invalid Id" });
                 var prescription = await _servicePrescription.GetById(id);
                 if (prescription == null) return BadRequest(new { message = $"There is no prescription with Id={id}" });
-                return Ok(new { prescription = prescription });
+                return Ok(prescription);
 
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -51,13 +50,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (entity == null) return BadRequest(new { message = "No Data provided!" });
-                var isSuccessfull = await _servicePrescription.Add(entity);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to add the prescription" });
-                return Ok(new { message = "The prescription is added successfully" });
+                var response = await _servicePrescription.Add(entity);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -68,13 +66,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (id <= 0 || entity == null) return BadRequest(new { message = "Invalid entered data" });
-                var isSuccessfull = await _servicePrescription.Update(id, entity);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to update the prescription" });
-                return Ok(new { message = "The prescription is updated successfully" });
+                var response = await _servicePrescription.Update(id, entity);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
 
@@ -85,13 +82,12 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (id <= 0) return BadRequest(new { message = "Invalid Id" });
-                var isSuccessfull = await _servicePrescription.DeleteById(id);
-                if (isSuccessfull <= 0) return StatusCode(500, new { message = "Failed to delete the prescription" });
-                return Ok(new { message = "The prescription is deleted successfully" });
+                var response = await _servicePrescription.DeleteById(id);
+                return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", Inner = $"{ex.InnerException?.Message}" });
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
     }

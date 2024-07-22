@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
+using HospitalAPI.Models.ViewModels;
 
-namespace HospitalAPI
+namespace HospitalAPI.Features.AutoMapper
 {
     public class AutoMapperProfile : Profile
     {
@@ -39,6 +40,21 @@ namespace HospitalAPI
 
             CreateMap<Prescription, PrescriptionDTO>();
             CreateMap<PrescriptionDTO, Prescription>();
+
+            CreateMap<User, UserSignUp>();
+            CreateMap<UserSignUp, User>();
+
+            CreateMap<User, UserLogin>();
+            CreateMap<UserLogin, User>();
+
+            CreateMap<User, UserDTO>();
+            CreateMap<UserDTO, User>();
+
+            CreateMap<User, UserViewModel>();
+            CreateMap<UserViewModel, User>();
+
+            /*CreateMap<IQueryable<User>, IQueryable<UserViewModel>>();
+            CreateMap<IQueryable<UserViewModel>, IQueryable<User>>();*/
 
         }
     }
