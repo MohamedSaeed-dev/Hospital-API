@@ -5,10 +5,12 @@ using HospitalAPI.Models.DTOs;
 using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using HospitalAPI.ServicesAPI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalAPI.Controllers
 {
+    [Authorize(Roles = "Admin , Receptionist")]
     [Route("api/[controller]")]
     [ApiController]
     public class PatientsController : ControllerBase

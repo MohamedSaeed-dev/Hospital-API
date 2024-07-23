@@ -3,10 +3,12 @@ using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalAPI.Controllers
 {
+    [Authorize(Roles = "Admin , Receptionist")]
     [Route("api/[controller]/")]
     [ApiController]
     public class DoctorsController : ControllerBase
