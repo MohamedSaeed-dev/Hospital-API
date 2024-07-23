@@ -21,7 +21,7 @@ namespace HospitalAPI.Controllers
         }
         // GET: api/<UsersController>
         [HttpGet]
-        public async Task<PagedList<UserViewModel>> GetAllDepartments([FromQuery] GetAllQueries queries)
+        public async Task<PagedList<UserViewModel>> GetAllUsers([FromQuery] GetAllQueries queries)
         {
             return await _serviceUser.GetAll(queries);
         }

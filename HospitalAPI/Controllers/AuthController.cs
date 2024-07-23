@@ -111,6 +111,7 @@ namespace HospitalAPI.Controllers
             }
         }
         [HttpPost("{Id}")]
+        [Authorize]
         public async Task<IActionResult> Logout(int Id)
         {
             try

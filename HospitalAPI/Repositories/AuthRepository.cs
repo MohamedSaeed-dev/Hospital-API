@@ -20,8 +20,9 @@ namespace HospitalAPI.Repositories
         private readonly IRedisService _redis;
         private readonly IUtilitiesService _utilities;
         private readonly IResponseStatus _response;
+        private readonly IHttpContextAccessor _http;
 
-        public AuthRepository(MyDbContext db, IMapper mapper, IConfiguration config, IMailService mailService, IRedisService redis, IUtilitiesService utilities, IResponseStatus response)
+        public AuthRepository(MyDbContext db, IMapper mapper, IConfiguration config, IMailService mailService, IRedisService redis, IUtilitiesService utilities, IResponseStatus response, IHttpContextAccessor http)
         {
             _db = db;
             _mapper = mapper;
@@ -30,6 +31,7 @@ namespace HospitalAPI.Repositories
             _redis = redis;
             _utilities = utilities;
             _response = response;
+            _http = http;
         }
         public async Task<ResponseStatus> Login(UserLogin user)
         {
@@ -41,7 +43,7 @@ namespace HospitalAPI.Repositories
                 if (!verifyPassword) return _response.BadRequest("Password is Incorrect");
                 var refreshToken = _utilities.GenerateToken(record, "KeyRefreshToken", DateTime.Now.AddDays(1));
                 await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
-                string token = _utilities.GenerateToken(record, "KeyAccessToken", DateTime.Now.AddSeconds(30));
+                string token = _utilities.GenerateToken(record, "KeyAccessToken", DateTime.Now.AddMinutes(1));
                 return _response.Ok(token);
             }
             catch(Exception)
@@ -64,7 +66,7 @@ namespace HospitalAPI.Repositories
                 await _db.SaveChangesAsync();
                 var refreshToken = _utilities.GenerateToken(newUser, "KeyRefreshToken", DateTime.Now.AddDays(1));
                 await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
-                string token = _utilities.GenerateToken(newUser, "KeyAccessToken", DateTime.Now.AddSeconds(30));
+                string token = _utilities.GenerateToken(newUser, "KeyAccessToken", DateTime.Now.AddMinutes(1));
                 return _response.Ok(token);
             }
             catch (Exception)
@@ -184,6 +186,7 @@ namespace HospitalAPI.Repositories
                 if (user == null) return _response.BadRequest("User is not exist");
                 if (await _redis.Get($"{user.Email}_refreshToken") == null) return _response.UnAuthorized("You are not Authorized");
                 await _redis.Delete($"{user.Email}_refreshToken");
+                _http.HttpContext!.Request.Headers.Authorization = string.Empty;
                 return _response.Ok("Logged Out Successfully");
             }
             catch (Exception)

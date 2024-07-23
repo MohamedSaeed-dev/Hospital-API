@@ -9,53 +9,33 @@ namespace HospitalAPI.Features.AutoMapper
     {
         public AutoMapperProfile()
         {
-            CreateMap<Doctor, DoctorDTO>();
+            CreateMap<Doctor, DoctorDTO>().ReverseMap();
 
-            CreateMap<DoctorDTO, Doctor>();
+            CreateMap<PatientDTO, Patient>().ReverseMap();
 
-            CreateMap<PatientDTO, Patient>();
+            CreateMap<Department, DepartmentDTO>().ReverseMap();
 
-            CreateMap<Patient, PatientDTO>();
+            CreateMap<Appointment, AppointmentDTO>().ReverseMap();
 
-            CreateMap<Department, DepartmentDTO>();
-            CreateMap<DepartmentDTO, Department>();
+            CreateMap<Billing, BillingDTO>().ReverseMap();
 
-            CreateMap<Appointment, AppointmentDTO>();
-            CreateMap<AppointmentDTO, Appointment>();
+            CreateMap<Prescription, PrescriptionDTO>().ReverseMap();
 
-            CreateMap<Billing, BillingDTO>();
-            CreateMap<BillingDTO, Billing>();
+            CreateMap<Department, DepartmentDTO>().ReverseMap();
 
-            CreateMap<Prescription, PrescriptionDTO>();
-            CreateMap<PrescriptionDTO, Prescription>();
+            CreateMap<Appointment, AppointmentDTO>().ReverseMap();
 
-            CreateMap<Department, DepartmentDTO>();
-            CreateMap<DepartmentDTO, Department>();
+            CreateMap<Billing, BillingDTO>().ReverseMap();
 
-            CreateMap<Appointment, AppointmentDTO>();
-            CreateMap<AppointmentDTO, Appointment>();
+            CreateMap<Prescription, PrescriptionDTO>().ReverseMap();
 
-            CreateMap<Billing, BillingDTO>();
-            CreateMap<BillingDTO, Billing>();
+            CreateMap<User, UserSignUp>().ReverseMap();
 
-            CreateMap<Prescription, PrescriptionDTO>();
-            CreateMap<PrescriptionDTO, Prescription>();
+            CreateMap<User, UserLogin>().ReverseMap();
 
-            CreateMap<User, UserSignUp>();
-            CreateMap<UserSignUp, User>();
+            CreateMap<User, UserDTO>().ReverseMap();
 
-            CreateMap<User, UserLogin>();
-            CreateMap<UserLogin, User>();
-
-            CreateMap<User, UserDTO>();
-            CreateMap<UserDTO, User>();
-
-            CreateMap<User, UserViewModel>();
-            CreateMap<UserViewModel, User>();
-
-            /*CreateMap<IQueryable<User>, IQueryable<UserViewModel>>();
-            CreateMap<IQueryable<UserViewModel>, IQueryable<User>>();*/
-
+            CreateMap<User, UserViewModel>().ReverseMap();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DataModels;
+using HospitalAPI.Models.ViewModels.ResponseStatus;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,10 +12,14 @@ namespace HospitalAPI.Features.Utils.Repository
     public class UtilitiesRepository : IUtilitiesService
     {
         private readonly IConfiguration _config;
+        private readonly IHttpContextAccessor _http;
+        private readonly IResponseStatus _response;
 
-        public UtilitiesRepository(IConfiguration config)
+        public UtilitiesRepository(IConfiguration config, IHttpContextAccessor http, IResponseStatus response)
         {
             _config = config;
+            _http = http;
+            _response = response;
         }
         public string GenerateCode()
         {
@@ -63,6 +68,31 @@ namespace HospitalAPI.Features.Utils.Repository
             var subEmail = email.Substring(0, 3);
             var newEmail = subEmail.PadRight(length, '*');
             return newEmail;
+        }
+
+        public bool VerifyToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:KeyAccessToken"]!);
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _config["Jwt:Issuer"],
+                    ValidAudience = _config["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero,
+                }, out SecurityToken verifiedToken);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

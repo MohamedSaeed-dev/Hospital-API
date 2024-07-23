@@ -21,6 +21,7 @@ using HospitalAPI.Features.Cookies.Repository;
 using HospitalAPI.Models.ViewModels.ResponseStatus;
 using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Features.Utils.Repository;
+using HospitalAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,8 +119,17 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
     });
 }
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/users"), appBuilder =>
+{
+    appBuilder.UseMiddleware<VerifyTokenMiddleware>();
+});
 
-app.UseCors();
+app.UseCors
+    (x => x 
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+    );
 
 app.UseHttpsRedirection();
 

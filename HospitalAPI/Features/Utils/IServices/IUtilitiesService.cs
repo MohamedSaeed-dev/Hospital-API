@@ -1,5 +1,6 @@
 ﻿using HospitalAPI.Features.Mail.Service;
 using HospitalAPI.Models.DataModels;
+using HospitalAPI.Models.ViewModels.ResponseStatus;
 
 namespace HospitalAPI.Features.Utils.IServices
 {
@@ -8,5 +9,6 @@ namespace HospitalAPI.Features.Utils.IServices
         string GenerateOTP();
         string GenerateCode();
         string GenerateToken(User user, string key, DateTime time);
+        bool VerifyToken(string token);
     }
 }
