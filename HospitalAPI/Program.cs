@@ -22,6 +22,10 @@ using HospitalAPI.Models.ViewModels.ResponseStatus;
 using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Features.Utils.Repository;
 using HospitalAPI.Middlewares;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,8 +95,12 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddResponseCaching();
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(option =>
     {
         option.TokenValidationParameters = new TokenValidationParameters
@@ -106,7 +114,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes((builder.Configuration["Jwt:KeyAccessToken"]!)))
         };
-    });
+    })
+    .AddGoogle(x =>
+    {
+        var config = builder.Configuration.GetSection("Auth:Google");
+        x.ClientId = config["ClientId"]!;
+        x.ClientSecret = config["ClientSecret"]!;
+    }).AddCookie();
+;
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

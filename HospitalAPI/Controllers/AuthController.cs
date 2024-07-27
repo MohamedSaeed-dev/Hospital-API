@@ -1,14 +1,18 @@
 ﻿using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 
 namespace HospitalAPI.Controllers
 {
-    [Route("api/[controller]/[Action]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -21,7 +25,7 @@ namespace HospitalAPI.Controllers
             _utilities = utilities;
         }
         [AllowAnonymous]
-        [HttpPost]
+        [HttpPost("Signup")]
         public async Task<IActionResult> SignUp(UserSignUp user)
         {
             try
@@ -38,7 +42,7 @@ namespace HospitalAPI.Controllers
             }
         }
         [AllowAnonymous]
-        [HttpPost]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login(UserLogin user)
         {
             try
@@ -54,7 +58,7 @@ namespace HospitalAPI.Controllers
             }
 
         }
-        [HttpPost]
+        [HttpPost("SendOTP")]
         public async Task<IActionResult> SendOTP(string Email)
         {
             try
@@ -68,7 +72,7 @@ namespace HospitalAPI.Controllers
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
-        [HttpPut]
+        [HttpPut("VerifyEmail")]
         public async Task<IActionResult> VerifyEmail([FromQuery] string OTP, [FromQuery] string Email)
         {
             try
@@ -82,7 +86,7 @@ namespace HospitalAPI.Controllers
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
-        [HttpPost]
+        [HttpPost("ForgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromQuery] string Email)
         {
             try
@@ -96,7 +100,7 @@ namespace HospitalAPI.Controllers
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
-        [HttpPut]
+        [HttpPut("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromQuery]string Email, [FromQuery]string code, [FromBody]string newPassword)
         {
             try
@@ -110,7 +114,7 @@ namespace HospitalAPI.Controllers
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
-        [HttpPost("{Id}")]
+        [HttpPost("Logout/{Id}")]
         [Authorize]
         public async Task<IActionResult> Logout(int Id)
         {
@@ -124,6 +128,26 @@ namespace HospitalAPI.Controllers
             {
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
+        }
+        [HttpGet("google/login")]
+        public IActionResult GoogleAuth()
+        {
+            var props = new AuthenticationProperties { RedirectUri = "api/auth/signin-google" };
+            return Challenge(props, GoogleDefaults.AuthenticationScheme);
+        }
+        [HttpGet("signin-google")]
+        public async Task<IActionResult> GoogleLogin()
+        {
+            var response = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (response.Principal == null) return BadRequest();
+
+            var claims = response.Principal.Claims;
+            var userInfo = new
+            {
+                AllClaims = claims.Select(c => new { c.Value })
+            };
+
+            return Ok(userInfo);
         }
     }
 }

@@ -115,7 +115,7 @@ namespace HospitalAPI.Repositories
         }
         public async Task<PateintAppointmentViewModel?> GetPateintAtAppointment(int appointmentId)
         {
-            return (from DP in _db.DoctorPatients
+            return await (from DP in _db.DoctorPatients
                     join P in _db.Patients
                     on DP.PatientId equals P.Id
                     join D in _db.Doctors
@@ -137,7 +137,7 @@ namespace HospitalAPI.Repositories
                         AppointmentDate = A.DateTime,
                         BillingAmount = B.Amount,
                         BillingStatus = B.Status
-                    }).FirstOrDefault();
+                    }).FirstOrDefaultAsync();
         }
         public async Task<ResponseStatus> Update(int Id, PatientDTO entity)
         {

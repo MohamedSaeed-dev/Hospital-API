@@ -88,7 +88,7 @@ namespace HospitalAPI.Repositories
                     Body = body
                 };
                 await _mailService.SendMail(mailDTO);
-                return _response.Ok("The Email is Sent Successfully");
+                return _response.Ok($"The Email is Sent Successfully to {_utilities.ShortenEmail(email)}");
             }
             catch (Exception)
             {
@@ -148,7 +148,7 @@ namespace HospitalAPI.Repositories
                 var subject = "Resetting Your Password";
                 var body = $"Reset your Password by clicking this link : <a href='{resetEndpoint}'>Click Here</a>";
                 await SendEmail(email,subject, body);
-                return _response.Ok($"The Code is Sent to {_utilities.ShortenEmail(email)}");
+                return _response.Ok($"The Code is Sent Sucessfully to {_utilities.ShortenEmail(email)}");
             }
             catch (Exception)
             {
@@ -186,7 +186,6 @@ namespace HospitalAPI.Repositories
                 if (user == null) return _response.BadRequest("User is not exist");
                 if (await _redis.Get($"{user.Email}_refreshToken") == null) return _response.UnAuthorized("You are not Authorized");
                 await _redis.Delete($"{user.Email}_refreshToken");
-                _http.HttpContext!.Request.Headers.Authorization = string.Empty;
                 return _response.Ok("Logged Out Successfully");
             }
             catch (Exception)

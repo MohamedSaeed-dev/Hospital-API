@@ -1,11 +1,5 @@
-﻿using Azure;
-using HospitalAPI.Features.Utils.IServices;
+﻿using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.ViewModels.ResponseStatus;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using static System.Net.WebRequestMethods;
 
 namespace HospitalAPI.Middlewares
 {
@@ -30,7 +24,7 @@ namespace HospitalAPI.Middlewares
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
-            var token = authHeader?.Split(" ")[1];
+            var token = authHeader.Split(" ")[1];
             bool isVerified = _utilities.VerifyToken(token!);
             if (!isVerified)
             {

@@ -14,7 +14,7 @@ namespace HospitalAPI.Features.Utils.Repository
         private readonly IConfiguration _config;
         private readonly IHttpContextAccessor _http;
         private readonly IResponseStatus _response;
-
+        private const string chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ";
         public UtilitiesRepository(IConfiguration config, IHttpContextAccessor http, IResponseStatus response)
         {
             _config = config;
@@ -23,12 +23,12 @@ namespace HospitalAPI.Features.Utils.Repository
         }
         public string GenerateCode()
         {
-            var code = "";
+            StringBuilder code = new StringBuilder();
             for (int i = 0; i < 16; i++)
             {
-                code += Convert.ToChar(65 + Random.Shared.Next(0, 26));
+                code.Append(chars[Random.Shared.Next(0, chars.Length)]);
             }
-            return code;
+            return code.ToString();
         }
 
         public string GenerateOTP()
@@ -43,7 +43,7 @@ namespace HospitalAPI.Features.Utils.Repository
             var role = Enum.GetName(typeof(Role), user.Role);
             var claims = new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserName),
+                new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, role!)
             };
@@ -64,10 +64,13 @@ namespace HospitalAPI.Features.Utils.Repository
 
         public string ShortenEmail(string email)
         {
-            var length = email.Length;
-            var subEmail = email.Substring(0, 3);
-            var newEmail = subEmail.PadRight(length, '*');
-            return newEmail;
+            // power123@gmail.com
+            // pow*****@gmail.com
+            var halfEmail = email.Split("@");
+            var length = halfEmail[0].Length;
+            var firstThree = halfEmail[0].Substring(0, 3);
+            var newEmail = firstThree.PadRight(length, '*');
+            return newEmail + halfEmail[1];
         }
 
         public bool VerifyToken(string token)
@@ -94,5 +97,9 @@ namespace HospitalAPI.Features.Utils.Repository
                 return false;
             }
         }
+        /*public Task RefreshToken()
+        {
+
+        }*/
     }
 }
