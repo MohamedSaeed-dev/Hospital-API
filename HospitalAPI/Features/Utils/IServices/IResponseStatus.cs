@@ -1,4 +1,6 @@
-﻿namespace HospitalAPI.Models.ViewModels.ResponseStatus
+﻿using HospitalAPI.Models.ViewModels;
+
+namespace HospitalAPI.Features.Utils.IServices
 {
     public interface IResponseStatus
     {

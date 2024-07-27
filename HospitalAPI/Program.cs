@@ -18,7 +18,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using HospitalAPI.Features.Cookies.IServices;
 using HospitalAPI.Features.Cookies.Repository;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
 using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Features.Utils.Repository;
 using HospitalAPI.Middlewares;
@@ -90,6 +89,7 @@ builder.Services.AddTransient<ICookieService, CookieRepository>();
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddTransient<IUtilitiesService, UtilitiesRepository>();
 builder.Services.AddTransient<IResponseStatus, ResponseStatusRepository>();
+builder.Services.AddTransient<ITokenService, TokenRepository>();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 

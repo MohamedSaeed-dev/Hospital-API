@@ -18,11 +18,13 @@ namespace HospitalAPI.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IUtilitiesService _utilities;
+        private readonly ITokenService _token;
 
-        public AuthController(IAuthService authService, IUtilitiesService utilities)
+        public AuthController(IAuthService authService, IUtilitiesService utilities, ITokenService token)
         {
             _authService = authService;
             _utilities = utilities;
+            _token = token;
         }
         [AllowAnonymous]
         [HttpPost("Signup")]
@@ -65,6 +67,20 @@ namespace HospitalAPI.Controllers
             {
                 if (string.IsNullOrEmpty(Email) || !_utilities.IsEmail(Email)) return BadRequest(new { message = "Invalid email" });
                 var response = await _authService.SendOTP(Email);
+                return StatusCode(response.StatusCode, new { message = response.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
+            }
+        }
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> Refresh([FromQuery] string Email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(Email) || !_utilities.IsEmail(Email)) return BadRequest(new { message = "Invalid email" });
+                var response = await _token.RefreshToken(Email);
                 return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)

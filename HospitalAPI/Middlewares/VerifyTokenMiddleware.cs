@@ -1,5 +1,4 @@
 ﻿using HospitalAPI.Features.Utils.IServices;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
 
 namespace HospitalAPI.Middlewares
 {
@@ -7,13 +6,13 @@ namespace HospitalAPI.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly IResponseStatus _response;
-        private readonly IUtilitiesService _utilities;
+        private readonly ITokenService _token;
 
-        public VerifyTokenMiddleware(RequestDelegate next, IResponseStatus response, IUtilitiesService utilities)
+        public VerifyTokenMiddleware(RequestDelegate next, IResponseStatus response, ITokenService token)
         {
             _next = next;
             _response = response;
-            _utilities = utilities;
+            _token = token;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -25,8 +24,8 @@ namespace HospitalAPI.Middlewares
                 return;
             }
             var token = authHeader.Split(" ")[1];
-            bool isVerified = _utilities.VerifyToken(token!);
-            if (!isVerified)
+            var user = _token.VerifyToken(token!, "KeyAccessToken");
+            if (user == null)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;

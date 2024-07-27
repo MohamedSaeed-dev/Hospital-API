@@ -1,6 +1,6 @@
 ﻿using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
+using HospitalAPI.Models.ViewModels;
 using System.Linq.Expressions;
 
 namespace HospitalAPI.ServicesAPI

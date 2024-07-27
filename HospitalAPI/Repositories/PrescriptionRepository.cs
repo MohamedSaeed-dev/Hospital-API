@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using HospitalAPI.Features.Pagination;
+using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
+using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;

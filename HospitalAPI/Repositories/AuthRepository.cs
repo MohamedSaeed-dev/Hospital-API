@@ -5,7 +5,7 @@ using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
+using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,8 +21,9 @@ namespace HospitalAPI.Repositories
         private readonly IUtilitiesService _utilities;
         private readonly IResponseStatus _response;
         private readonly IHttpContextAccessor _http;
+        private readonly ITokenService _token;
 
-        public AuthRepository(MyDbContext db, IMapper mapper, IConfiguration config, IMailService mailService, IRedisService redis, IUtilitiesService utilities, IResponseStatus response, IHttpContextAccessor http)
+        public AuthRepository(MyDbContext db, IMapper mapper, IConfiguration config, IMailService mailService, IRedisService redis, IUtilitiesService utilities, IResponseStatus response, IHttpContextAccessor http, ITokenService token)
         {
             _db = db;
             _mapper = mapper;
@@ -32,6 +33,7 @@ namespace HospitalAPI.Repositories
             _utilities = utilities;
             _response = response;
             _http = http;
+            _token = token;
         }
         public async Task<ResponseStatus> Login(UserLogin user)
         {
@@ -41,9 +43,9 @@ namespace HospitalAPI.Repositories
                 if (record == null) return _response.BadRequest("User is not exist");
                 var verifyPassword = BCrypt.Net.BCrypt.Verify(user.Password, record.Password);
                 if (!verifyPassword) return _response.BadRequest("Password is Incorrect");
-                var refreshToken = _utilities.GenerateToken(record, "KeyRefreshToken", DateTime.Now.AddDays(1));
+                var refreshToken = _token.GenerateToken(record, "KeyRefreshToken", DateTime.Now.AddDays(1));
                 await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
-                string token = _utilities.GenerateToken(record, "KeyAccessToken", DateTime.Now.AddMinutes(1));
+                string token = _token.GenerateToken(record, "KeyAccessToken", DateTime.Now.AddMinutes(1));
                 return _response.Ok(token);
             }
             catch(Exception)
@@ -64,9 +66,9 @@ namespace HospitalAPI.Repositories
                 newUser.Role = Role.Receptionist;
                 await _db.Users.AddAsync(newUser);
                 await _db.SaveChangesAsync();
-                var refreshToken = _utilities.GenerateToken(newUser, "KeyRefreshToken", DateTime.Now.AddDays(1));
+                var refreshToken = _token.GenerateToken(newUser, "KeyRefreshToken", DateTime.Now.AddDays(1));
                 await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
-                string token = _utilities.GenerateToken(newUser, "KeyAccessToken", DateTime.Now.AddMinutes(1));
+                string token = _token.GenerateToken(newUser, "KeyAccessToken", DateTime.Now.AddMinutes(1));
                 return _response.Ok(token);
             }
             catch (Exception)

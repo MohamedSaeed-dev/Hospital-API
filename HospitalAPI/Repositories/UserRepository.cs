@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using HospitalAPI.Features.Pagination;
+using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.ViewModels;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -54,6 +54,11 @@ namespace HospitalAPI.Repositories
             var user = await _db.Users.FindAsync(Id);
             var userViewModel = _mapper.Map<UserViewModel>(user);
             return userViewModel;
+        }
+
+        public async Task<User> GetByProperty(Func<User, bool> predicate)
+        {
+            return await Task.Run(() => _db.Users.First(predicate));
         }
 
         public Expression<Func<User, object>> GetProperty(string sortColumn)

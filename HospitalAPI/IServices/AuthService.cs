@@ -1,7 +1,7 @@
 ﻿using HospitalAPI.Features.Mail.Service;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DTOs;
-using HospitalAPI.Models.ViewModels.ResponseStatus;
+using HospitalAPI.Models.ViewModels;
 
 namespace HospitalAPI.Services
 {
