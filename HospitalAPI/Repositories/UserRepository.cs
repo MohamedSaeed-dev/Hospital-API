@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using HospitalAPI.Features;
 using HospitalAPI.Features.Pagination;
 using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DataModels;

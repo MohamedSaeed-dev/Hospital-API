@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
+using HospitalAPI.Features;
 using HospitalAPI.Features.Mail.Service;
 using HospitalAPI.Features.Redis.Service;
 using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
-using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,7 +59,7 @@ namespace HospitalAPI.Repositories
             try
             {
                 var record = await _db.Users.SingleOrDefaultAsync(x => x.UserName == user.UserName);
-                if (record == null) return _response.BadRequest("User is not exist");
+                if (record != null) return _response.BadRequest("User is exist");
                 var hashPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
                 user.Password = hashPassword;
                 User newUser = _mapper.Map<User>(user);

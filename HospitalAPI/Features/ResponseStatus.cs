@@ -1,4 +1,4 @@
-﻿namespace HospitalAPI.Models.ViewModels
+﻿namespace HospitalAPI.Features
 {
     public class ResponseStatus
     {

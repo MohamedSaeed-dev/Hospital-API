@@ -1,4 +1,5 @@
-﻿using HospitalAPI.Features.Pagination;
+﻿using HospitalAPI.Features;
+using HospitalAPI.Features.Pagination;
 using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.ViewModels;
 using HospitalAPI.ServicesAPI;

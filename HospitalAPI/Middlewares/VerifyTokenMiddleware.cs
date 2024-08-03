@@ -2,20 +2,18 @@
 
 namespace HospitalAPI.Middlewares
 {
-    public class VerifyTokenMiddleware
+    public class VerifyTokenMiddleware : IMiddleware
     {
-        private readonly RequestDelegate _next;
         private readonly IResponseStatus _response;
         private readonly ITokenService _token;
 
-        public VerifyTokenMiddleware(RequestDelegate next, IResponseStatus response, ITokenService token)
+        public VerifyTokenMiddleware(IResponseStatus response, ITokenService token)
         {
-            _next = next;
             _response = response;
             _token = token;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             string? authHeader = context.Request.Headers["Authorization"].ToString();
             if (string.IsNullOrEmpty(authHeader))
@@ -30,7 +28,7 @@ namespace HospitalAPI.Middlewares
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
-            await _next(context);
+            await next(context);
         }
     }
 }

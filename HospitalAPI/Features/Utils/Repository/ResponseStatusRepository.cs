@@ -1,5 +1,4 @@
 ﻿using HospitalAPI.Features.Utils.IServices;
-using HospitalAPI.Models.ViewModels;
 
 namespace HospitalAPI.Features.Utils.Repository
 {

@@ -1,14 +1,10 @@
 ﻿using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DTOs;
 using HospitalAPI.Services;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalAPI.Controllers
 {
@@ -19,14 +15,12 @@ namespace HospitalAPI.Controllers
         private readonly IAuthService _authService;
         private readonly IUtilitiesService _utilities;
         private readonly ITokenService _token;
-
         public AuthController(IAuthService authService, IUtilitiesService utilities, ITokenService token)
         {
             _authService = authService;
             _utilities = utilities;
             _token = token;
         }
-        [AllowAnonymous]
         [HttpPost("Signup")]
         public async Task<IActionResult> SignUp(UserSignUp user)
         {
@@ -43,7 +37,6 @@ namespace HospitalAPI.Controllers
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
-        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(UserLogin user)
         {
@@ -131,7 +124,6 @@ namespace HospitalAPI.Controllers
             }
         }
         [HttpPost("Logout/{Id}")]
-        [Authorize]
         public async Task<IActionResult> Logout(int Id)
         {
             try
@@ -151,18 +143,21 @@ namespace HospitalAPI.Controllers
             var props = new AuthenticationProperties { RedirectUri = "api/auth/signin-google" };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
-        [HttpGet("signin-google")]
+        [HttpGet("throw")]
+        public IActionResult Throw()
+        {
+            throw new Exception("yes");
+        }
+        [HttpGet("google/signin-google")]
         public async Task<IActionResult> GoogleLogin()
         {
             var response = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             if (response.Principal == null) return BadRequest();
-
             var claims = response.Principal.Claims;
             var userInfo = new
             {
                 AllClaims = claims.Select(c => new { c.Value })
             };
-
             return Ok(userInfo);
         }
     }
