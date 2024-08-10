@@ -1,4 +1,4 @@
-### Simple Hopital Managment System API 🏥
+# Simple Hopital Managment System API 🏥
 
 - A project has been developed to instantiate an endpoints of hospital managmnet system. 🏥
 - Provide The CRUD Operation for all Models. ➕➖
@@ -7,5 +7,5 @@
 - Authentication & Authorization, Google Auth 🔐.
 - Sending Email, Redis Cache, Pagination & Filtering & Sorting. 📧📃
 - and more..
-### License
+# License
 This projcet is open-source and free for any contribution ❤️
