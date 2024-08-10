@@ -45,7 +45,7 @@ namespace HospitalAPI.Controllers
                 if (user == null) return BadRequest(new { message = "Invalid User data" });
                 if (string.IsNullOrEmpty( user.Email) || string.IsNullOrEmpty(user.Password)) return BadRequest(new { message = "Invalid User data" });
                 var response = await _authService.Login(user);
-                return StatusCode(response.StatusCode, new { token = response.Message });
+                return StatusCode(response.StatusCode, new { response.Message });
             }
             catch (Exception ex)
             {
@@ -59,7 +59,7 @@ namespace HospitalAPI.Controllers
             try
             {
                 if (string.IsNullOrEmpty(Email) || !_utilities.IsEmail(Email)) return BadRequest(new { message = "Invalid email" });
-                var response = await _authService.SendOTP(Email);
+                var response = await _utilities.SendOTP(Email);
                 return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)

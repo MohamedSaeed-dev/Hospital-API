@@ -6,5 +6,6 @@ namespace HospitalAPI.Features.Utils.IServices
     {
         string GenerateOTP();
         string GenerateCode();
+        Task<ResponseStatus> SendOTP(string email);
     }
 }

@@ -2,13 +2,14 @@
 {
     public interface IResponseStatus
     {
-        ResponseStatus Ok(string message);
-        ResponseStatus InternalServerError(string message, string InnerError);
-        ResponseStatus Forbidden(string message);
-        ResponseStatus UnAuthorized(string message);
-        ResponseStatus NotFound(string message);
-        ResponseStatus BadRequest(string message);
-        ResponseStatus Created(string message);
+        ResponseStatus Ok(object message);
+        ResponseStatus InternalServerError(object message, object InnerError);
+        ResponseStatus Forbidden(object message);
+        ResponseStatus UnAuthorized(object message);
+        ResponseStatus NotFound(object message);
+        ResponseStatus BadRequest(object message);
+        ResponseStatus Created(object message);
+        ResponseStatus Custom(int statusCode, object message);
         ResponseStatus NoContent();
     }
 }

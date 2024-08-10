@@ -3,8 +3,8 @@
     public class ResponseStatus
     {
         public int StatusCode { get; set; }
-        public string? Message { get; set; } = string.Empty;
-        public ResponseStatus(int code, string? message = null)
+        public object? Message { get; set; }
+        public ResponseStatus(int code, object? message = null)
         {
             StatusCode = code;
             Message = message;

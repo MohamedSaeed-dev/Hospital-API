@@ -46,7 +46,16 @@ namespace HospitalAPI.Repositories
                 var refreshToken = _token.GenerateToken(record, "KeyRefreshToken", DateTime.Now.AddDays(1));
                 await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
                 string token = _token.GenerateToken(record, "KeyAccessToken", DateTime.Now.AddMinutes(1));
-                return _response.Ok(token);
+                var loginWarning = new
+                {
+                    warning = "Your account is not verifed yet",
+                    token,
+                };
+                var loginSuccess = new
+                {
+                    token
+                };
+                return _response.Ok(record.IsVerified ? loginSuccess : loginWarning);
             }
             catch(Exception)
             {
@@ -58,7 +67,7 @@ namespace HospitalAPI.Repositories
         {
             try
             {
-                var record = await _db.Users.SingleOrDefaultAsync(x => x.UserName == user.UserName);
+                var record = await _db.Users.SingleOrDefaultAsync(x => x.UserName == user.UserName || x.Email == user.Email);
                 if (record != null) return _response.BadRequest("User is exist");
                 var hashPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
                 user.Password = hashPassword;
@@ -66,31 +75,8 @@ namespace HospitalAPI.Repositories
                 newUser.Role = Role.Receptionist;
                 await _db.Users.AddAsync(newUser);
                 await _db.SaveChangesAsync();
-                var refreshToken = _token.GenerateToken(newUser, "KeyRefreshToken", DateTime.Now.AddDays(1));
-                await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
-                string token = _token.GenerateToken(newUser, "KeyAccessToken", DateTime.Now.AddMinutes(1));
-                return _response.Ok(token);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ResponseStatus> SendEmail(string email, string subject, string body)
-        {
-            try
-            {
-                var user = await _db.Users.SingleOrDefaultAsync(x => x.Email == email);
-                if (user == null) return _response.BadRequest("User is not exist");
-                MailDTO mailDTO = new MailDTO
-                {
-                    ToEmail = email,
-                    Subject = subject,
-                    Body = body
-                };
-                await _mailService.SendMail(mailDTO);
-                return _response.Ok($"The Email is Sent Successfully to {_utilities.ShortenEmail(email)}");
+                var response = await _utilities.SendOTP(user.Email);
+                return _response.Custom(response.StatusCode, response.Message!);  
             }
             catch (Exception)
             {
@@ -109,27 +95,10 @@ namespace HospitalAPI.Repositories
                 user.IsVerified = true;
                 await _redis.Delete(email);
                 await _db.SaveChangesAsync();
-                return _response.Ok("The Email is Verified Successfully");
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ResponseStatus> SendOTP(string email)
-        {
-            try
-            {
-                var user = await _db.Users.SingleOrDefaultAsync(x => x.Email == email);
-                if (user == null) return _response.BadRequest("User is not exist");
-                if (user.IsVerified) return _response.BadRequest("User is already verified");
-                var otp = _utilities.GenerateOTP();
-                await _redis.Add(email, otp, TimeSpan.FromMinutes(5));
-                var subject = "Email Verification - Hospital System";
-                var body = $"Here is the OTP for your Email Verification: {otp}, Don't share it with anyone.";
-                await SendEmail(email, subject, body);
-                return _response.Ok("The OTP is sent Successfully");
+                var refreshToken = _token.GenerateToken(user, "KeyRefreshToken", DateTime.Now.AddDays(1));
+                await _redis.Add($"{user.Email}_refreshToken", refreshToken, TimeSpan.FromDays(7));
+                string token = _token.GenerateToken(user, "KeyAccessToken", DateTime.Now.AddMinutes(1));
+                return _response.Ok(token);
             }
             catch (Exception)
             {
@@ -149,7 +118,7 @@ namespace HospitalAPI.Repositories
                 var resetEndpoint = $"{_config["URL"]}/resetpassword/?email={email}&code={code}";
                 var subject = "Resetting Your Password";
                 var body = $"Reset your Password by clicking this link : <a href='{resetEndpoint}'>Click Here</a>";
-                await SendEmail(email,subject, body);
+                await _utilities.SendEmail(email,subject, body);
                 return _response.Ok($"The Code is Sent Sucessfully to {_utilities.ShortenEmail(email)}");
             }
             catch (Exception)

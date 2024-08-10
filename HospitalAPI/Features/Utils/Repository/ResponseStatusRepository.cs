@@ -4,22 +4,27 @@ namespace HospitalAPI.Features.Utils.Repository
 {
     public class ResponseStatusRepository : IResponseStatus
     {
-        public ResponseStatus BadRequest(string message)
+        public ResponseStatus BadRequest(object message)
         {
             return new ResponseStatus(400, message);
         }
 
-        public ResponseStatus Created(string message)
+        public ResponseStatus Created(object message)
         {
             return new ResponseStatus(201, message);
         }
 
-        public ResponseStatus Forbidden(string message)
+        public ResponseStatus Custom(int statusCode, object message)
+        {
+            return new ResponseStatus(statusCode, message);
+        }
+
+        public ResponseStatus Forbidden(object message)
         {
             return new ResponseStatus(403, message);
         }
 
-        public ResponseStatus InternalServerError(string message, string InnerError)
+        public ResponseStatus InternalServerError(object message, object InnerError)
         {
             var msg = $"Error = {message} \nInnerError = {InnerError}";
             return new ResponseStatus(500, msg);
@@ -30,17 +35,17 @@ namespace HospitalAPI.Features.Utils.Repository
             return new ResponseStatus(204);
         }
 
-        public ResponseStatus NotFound(string message)
+        public ResponseStatus NotFound(object message)
         {
             return new ResponseStatus(404, message);
         }
 
-        public ResponseStatus Ok(string message)
+        public ResponseStatus Ok(object message)
         {
             return new ResponseStatus(200, message);
         }
 
-        public ResponseStatus UnAuthorized(string message)
+        public ResponseStatus UnAuthorized(object message)
         {
             return new ResponseStatus(401, message);
         }
