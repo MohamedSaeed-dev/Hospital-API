@@ -13,23 +13,19 @@ namespace HospitalAPI.Features.Utils.Repository
 {
     public class TokenRepository : ITokenService
     {
-        private readonly IRedisService _redis;
         private readonly IUtilitiesService _utilities;
         private readonly IResponseStatus _response;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-        public TokenRepository(IRedisService redis, IUtilitiesService utilities, IResponseStatus response, IConfiguration config, IMapper mapper)
+        public TokenRepository(IUtilitiesService utilities, IResponseStatus response, IConfiguration config, IMapper mapper)
         {
-            _redis = redis;
             _utilities = utilities;
             _response = response;
             _config = config;
             _mapper = mapper;
         }
-        public async Task<ResponseStatus> RefreshToken(string email)
+        public ResponseStatus RefreshToken(string refreshToken)
         {
-            var refreshToken = await _redis.Get($"{email}_refreshToken");
-            if (string.IsNullOrEmpty(refreshToken)) return _response.UnAuthorized("UnAuthorized");
             var userViewModel = VerifyToken(refreshToken, "KeyRefreshToken");
             if(userViewModel == null) return _response.Forbidden("Forbidden");
             var user = _mapper.Map<User>(userViewModel);

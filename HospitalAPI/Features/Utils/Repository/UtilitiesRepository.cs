@@ -1,21 +1,19 @@
 ﻿using HospitalAPI.Features.Mail.Service;
 using HospitalAPI.Features.Redis.Service;
 using HospitalAPI.Features.Utils.IServices;
-using HospitalAPI.Models.DataModels;
 using HospitalAPI.Models.DbContextModel;
 using HospitalAPI.Models.DTOs;
-using HospitalAPI.Services;
+using HospitalAPI.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace HospitalAPI.Features.Utils.Repository
 {
     public class UtilitiesRepository : IUtilitiesService
     {
+        private readonly HttpClient _httpClient;
         private readonly MyDbContext _db;
         private readonly IMailService _mailService;
         private readonly IConfiguration _config;
@@ -23,7 +21,7 @@ namespace HospitalAPI.Features.Utils.Repository
         private readonly IResponseStatus _response;
         private readonly IRedisService _redis;
         private const string chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ";
-        public UtilitiesRepository(IConfiguration config, IHttpContextAccessor http, IResponseStatus response, IRedisService redis, MyDbContext db, IMailService mailService)
+        public UtilitiesRepository(IConfiguration config, IHttpContextAccessor http, IResponseStatus response, IRedisService redis, MyDbContext db, IMailService mailService, HttpClient httpClient)
         {
             _config = config;
             _http = http;
@@ -31,6 +29,7 @@ namespace HospitalAPI.Features.Utils.Repository
             _redis = redis;
             _db = db;
             _mailService = mailService;
+            _httpClient = httpClient;
         }
         public string GenerateCode()
         {
@@ -67,8 +66,10 @@ namespace HospitalAPI.Features.Utils.Repository
         {
             try
             {
-                var user = await _db.Users.SingleOrDefaultAsync(x => x.Email == email);
-                if (user == null) return _response.BadRequest("User is not exist");
+                var isEmailWork = await CheckEmail(email);
+                if (isEmailWork.StatusCode != 200) return _response.Custom(isEmailWork.StatusCode, isEmailWork.Message!);
+                EmailCheckViewModel emailCheck = (EmailCheckViewModel)isEmailWork.Message!;
+                if (!emailCheck.SmtpCheck) return _response.BadRequest("Check correctness of your Email");
                 MailDTO mailDTO = new MailDTO
                 {
                     ToEmail = email,
@@ -88,16 +89,38 @@ namespace HospitalAPI.Features.Utils.Repository
             try
             {
                 var user = await _db.Users.SingleOrDefaultAsync(x => x.Email == email);
-                if (user == null) return _response.BadRequest("User is not exist");
-                if (user.IsVerified) return _response.BadRequest("User is already verified");
+                if (user != null && user.IsVerified) return _response.BadRequest("User is already verified");
                 var otp = GenerateOTP();
-                await _redis.Add(email, otp, TimeSpan.FromMinutes(5));
+                await _redis.Add($"{email}_OTP", otp, TimeSpan.FromMinutes(10));
                 var subject = "Email Verification - Hospital System";
-                var body = $"Here is the OTP for your Email Verification: {otp}, Don't share it with anyone.";
-                await SendEmail(email, subject, body);
-                return _response.Ok("The OTP is sent Successfully");
+                var body = $"Here is the OTP for your Email Verification: <br> <strong>{otp}</strong> <br> Don't share it with anyone. <br> if you're not who did that action, just ignore it";
+                var response = await SendEmail(email, subject, body);
+                if (response.StatusCode != 200) return _response.Custom(response.StatusCode, response.Message!);
+                return _response.Custom(response.StatusCode, response.Message!);
             }
             catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private async Task<ResponseStatus> CheckEmail(string email)
+        {
+            try
+            {
+                var messageRequest = new HttpRequestMessage(HttpMethod.Get, $"https://api.apilayer.com/email_verification/check?email={email}");
+                messageRequest.Headers.Add("apiKey", _config["EmailCheckAPI"]);
+                var send = await _httpClient.SendAsync(messageRequest);
+                if (!send.IsSuccessStatusCode) return _response.Custom((int)send.StatusCode, "Something went wrong with Email Check");
+                var content = await send.Content.ReadAsStringAsync();
+                var json = JsonSerializer.Deserialize<EmailCheckViewModel>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    WriteIndented = true,
+                });
+                return _response.Ok(json!);
+            }
+            catch(Exception)
             {
                 throw;
             }

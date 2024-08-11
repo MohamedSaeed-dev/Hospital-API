@@ -39,6 +39,7 @@ namespace HospitalAPI.Config
 
         public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
         {
+            
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IResponseStatus, ResponseStatusRepository>();
 
@@ -56,6 +57,7 @@ namespace HospitalAPI.Config
             services.AddTransient<ICookieService, CookieRepository>();
             services.AddTransient<IUtilitiesService, UtilitiesRepository>();
             services.AddTransient<ITokenService, TokenRepository>();
+            services.AddTransient<HttpClient>();
 
             services.AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")!));
 

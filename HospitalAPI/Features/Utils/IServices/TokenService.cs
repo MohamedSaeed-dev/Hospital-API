@@ -5,7 +5,7 @@ namespace HospitalAPI.Features.Utils.IServices
 {
     public interface ITokenService
     {
-        Task<ResponseStatus> RefreshToken(string email);
+        ResponseStatus RefreshToken(string refreshToken);
         string GenerateToken(User user, string key, DateTime time);
         UserViewModel? VerifyToken(string token, string key);
     }

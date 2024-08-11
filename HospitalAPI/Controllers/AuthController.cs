@@ -1,5 +1,6 @@
 ﻿using HospitalAPI.Features.Utils.IServices;
 using HospitalAPI.Models.DTOs;
+using HospitalAPI.Models.ViewModels;
 using HospitalAPI.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -45,7 +46,14 @@ namespace HospitalAPI.Controllers
                 if (user == null) return BadRequest(new { message = "Invalid User data" });
                 if (string.IsNullOrEmpty( user.Email) || string.IsNullOrEmpty(user.Password)) return BadRequest(new { message = "Invalid User data" });
                 var response = await _authService.Login(user);
-                return StatusCode(response.StatusCode, new { response.Message });
+                if(response.StatusCode != 200) return StatusCode(response.StatusCode, new { response.Message });
+                LoginViewModel login = (LoginViewModel)response.Message!;
+                Response.Cookies.Append("refreshToken", login.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    MaxAge = TimeSpan.FromDays(7)
+                });
+                return StatusCode(response.StatusCode, new { warning = login.Warning, token = login.AccessToken });
             }
             catch (Exception ex)
             {
@@ -68,12 +76,13 @@ namespace HospitalAPI.Controllers
             }
         }
         [HttpPost("RefreshToken")]
-        public async Task<IActionResult> Refresh([FromQuery] string Email)
+        public IActionResult Refresh()
         {
             try
             {
-                if (string.IsNullOrEmpty(Email) || !_utilities.IsEmail(Email)) return BadRequest(new { message = "Invalid email" });
-                var response = await _token.RefreshToken(Email);
+                string? refreshToken = Request.Cookies[$"refreshToken"];
+                if(string.IsNullOrEmpty(refreshToken)) return StatusCode(403, new { message = "Forbidden" });
+                var response = _token.RefreshToken(refreshToken);
                 return StatusCode(response.StatusCode, new { message = response.Message });
             }
             catch (Exception ex)
@@ -82,13 +91,20 @@ namespace HospitalAPI.Controllers
             }
         }
         [HttpPut("VerifyEmail")]
-        public async Task<IActionResult> VerifyEmail([FromQuery] string OTP, [FromQuery] string Email)
+        public async Task<IActionResult> VerifyEmail([FromQuery] string Email, [FromQuery] string OTP)
         {
             try
             {
                 if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(OTP) || !_utilities.IsEmail(Email)) return BadRequest(new { message = "Invalid data" });
-                var response = await _authService.VerifyEmail(OTP, Email);
-                return StatusCode(response.StatusCode, new { message = response.Message });
+                var response = await _authService.VerifyEmail(Email, OTP);
+                if(response.StatusCode != 200) return StatusCode(response.StatusCode, new { message = response.Message });
+                SignupViewModel signup = (SignupViewModel)response.Message!;
+                Response.Cookies.Append("refreshToken", signup.RefreshToken, new CookieOptions
+                {
+                    MaxAge = TimeSpan.FromDays(7),
+                    HttpOnly = true,
+                });
+                return StatusCode(response.StatusCode, new { token = signup.AccessToken });
             }
             catch (Exception ex)
             {
@@ -123,14 +139,15 @@ namespace HospitalAPI.Controllers
                 return StatusCode(500, new { message = "Something went wrong", Error = $"{ex.Message}", InnerError = $"{ex.InnerException?.Message}" });
             }
         }
-        [HttpPost("Logout/{Id}")]
-        public async Task<IActionResult> Logout(int Id)
+        [HttpPost("Logout")]
+        public IActionResult Logout()
         {
             try
             {
-                if (Id <= 0) return BadRequest(new { message = "Invalid Id" });
-                var response = await _authService.Logout(Id);
-                return StatusCode(response.StatusCode, new { message = response.Message });
+                string? refreshToken = Request.Cookies["refreshToken"];
+                if(string.IsNullOrEmpty(refreshToken)) return StatusCode(403, new { message = "Forbidden"});
+                Response.Cookies.Delete("refreshToken");
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -142,11 +159,6 @@ namespace HospitalAPI.Controllers
         {
             var props = new AuthenticationProperties { RedirectUri = "api/auth/signin-google" };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
-        }
-        [HttpGet("throw")]
-        public IActionResult Throw()
-        {
-            throw new Exception("yes");
         }
         [HttpGet("google/signin-google")]
         public async Task<IActionResult> GoogleLogin()
