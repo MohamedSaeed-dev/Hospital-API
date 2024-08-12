@@ -44,7 +44,7 @@ namespace HospitalAPI.Repositories
                 var record = await _db.Users.SingleOrDefaultAsync(x => x.Email == user.Email);
                 if (record == null) return _response.BadRequest("User is not exist");
                 var verifyPassword = BCrypt.Net.BCrypt.Verify(user.Password, record.Password);
-                if (!verifyPassword) return _response.BadRequest("Password is Incorrect");
+                if (!verifyPassword) return _response.BadRequest("Username or Password is Incorrect");
                 string refreshToken = _token.GenerateToken(record, "KeyRefreshToken", DateTime.Now.AddDays(7));
                 string accessToken = _token.GenerateToken(record, "KeyAccessToken", DateTime.Now.AddMinutes(3));
                 var login = new LoginViewModel
