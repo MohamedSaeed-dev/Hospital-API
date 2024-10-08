@@ -4,19 +4,17 @@ namespace HospitalAPI.Middlewares
 {
     public class VerifyTokenMiddleware : IMiddleware
     {
-        private readonly IResponseStatus _response;
         private readonly ITokenService _token;
 
         public VerifyTokenMiddleware(IResponseStatus response, ITokenService token)
         {
-            _response = response;
             _token = token;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             string? authHeader = context.Request.Headers["Authorization"].ToString();
-            if (string.IsNullOrEmpty(authHeader))
+            if (string.IsNullOrWhiteSpace(authHeader))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
