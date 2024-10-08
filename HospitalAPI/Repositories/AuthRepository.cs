@@ -125,7 +125,7 @@ namespace HospitalAPI.Repositories
                 var resetEndpoint = $"{_config["URL"]}/resetpassword/?email={email}&code={code}";
                 var subject = "Resetting Your Password";
                 var body = $"Reset your Password by clicking this link : <a href='{resetEndpoint}'>Click Here</a>";
-                await _utilities.SendEmail(email,subject, body);
+                await _utilities.SendEmail(email, subject, body);
                 return _response.Ok($"The Code is Sent Sucessfully to {_utilities.ShortenEmail(email)}");
             }
             catch (Exception)
